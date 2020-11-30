@@ -32,8 +32,8 @@ If you make changes in the python script and want to update the .exe:
 
 Make sure to install pyinstaller. Delete the old .exe and run this command on cmd inside the same folder where the .py is:
 
-pyinstaller --noconsole --onefile --noupx --icon=app.ico --name "name of app" app.py
+pyinstaller --noconsole --onefile --noupx --icon=BABR.ico --name "Blender Animation Batch Renderer" BlenderAnimBatchRender.py
 
-omit "--icon-app.ico" if you don't want the icon.
+omit "--icon=BABR.ico" if you don't want the icon.
 
 
