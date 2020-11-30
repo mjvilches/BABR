@@ -1,5 +1,5 @@
 # BABR (Blender Animation Batch Renderer)
-An application that allows Blender users to render multiple batches of .blend files.
+An application that allows Blender users to render batches of .blend files.
 
 Just run Blender Animation Batch Renderer.exe and the rest should be easy to understand!
 
