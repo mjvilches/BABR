@@ -82,9 +82,8 @@ def blenderPath(): ## Blender Directory Command
 
 def addBlendFile(): ## ADD button command
 
-    with open('render.bat', 'w') as f:
-        f.close()
-        os.remove(f.name)
+    if os.path.exists("render.bat"):
+        os.remove("render.bat")
 
     filenames = filedialog.askopenfiles(initialdir="/", title="Select Files",
                                       filetypes=(("Blend Files", "*.blend"),("All Files","*.*")))
@@ -128,9 +127,8 @@ def removeFiles(): ## REMOVE button command
 
 def editFile():
 
-    with open('edit.bat', 'w') as f:
-        f.close()
-        os.remove(f.name)
+    if os.path.exists("edit.bat"):
+        os.remove("edit.bat")
 
     if renderNames == []:
         return
@@ -146,13 +144,17 @@ def editFile():
 
         commandlist = str("{}\n" * len(editCommands)).format(*editCommands)
 
-        with open('edit.bat', 'w') as e:
-            e.write(commandlist)
+
+        e = open("edit.bat", "w")
+        e.write(commandlist)
+        e.close()
 
         p = subprocess.Popen('edit.bat', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, creationflags=0x08000000)
 
         # Until I get last line and the end of string:
         while p.stdout is not None:
+
+            line = p.stdout.readline()
 
             root.mainloop() ## keeps gui responsive
 
@@ -181,10 +183,6 @@ def clearFilesList(): ## Clear Files List
         runCommands.clear()
         frameFILES.delete(0,END)
 
-        with open('render.bat', 'w') as f:
-            f.close()
-            os.remove(f.name)
-
 def renderAll(): ## render button command
 
     runCommands.clear()
@@ -202,6 +200,9 @@ def renderAll(): ## render button command
         return
     else: ## render is a go
 
+        if os.path.exists("render.bat"):
+            os.remove("render.bat")
+
         renderConfirm = messagebox.askyesno('', 'ARE YOUR REALLY READY?')
 
         if renderConfirm == True:
@@ -217,8 +218,12 @@ def renderAll(): ## render button command
 
             commandlist = str("{}\n" * len(runCommands)).format(*runCommands)
 
-            with open('render.bat', 'w') as f:
-                f.write(commandlist)
+            # with open('render.bat', 'w') as f:
+            #     f.write(commandlist)
+
+            f = open("render.bat", "w")
+            f.write(commandlist)
+            f.close()
 
             # Draw progressbar:
             style = ttk.Style()
@@ -351,10 +356,8 @@ root.config(menu=menubar)
 root.mainloop()
 
 #removes generated .bat files
-with open('edit.bat', 'w') as f:
-    f.close()
-    os.remove(f.name)
+if os.path.exists("edit.bat"):
+    os.remove("edit.bat")
 
-with open('render.bat', 'w') as f:
-    f.close()
-    os.remove(f.name)
+if os.path.exists("render.bat"):
+    os.remove("render.bat")
