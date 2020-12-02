@@ -208,6 +208,7 @@ def renderAll(): ## render button command
         if renderConfirm == True:
 
             cancelled = []
+            currentBlend = []
 
             ## Creates the render.bat file
 
@@ -232,7 +233,6 @@ def renderAll(): ## render button command
             bar = Progressbar(frame2, style='black.Horizontal.TProgressbar', mode='indeterminate')
             bar.pack(anchor='s', fill='x')
 
-
             # Execute some job with multiple lines on stdout:
             p = subprocess.Popen('render.bat', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, creationflags=0x08000000)
 
@@ -242,6 +242,7 @@ def renderAll(): ## render button command
                 if c == True:
                     Popen("TASKKILL /F /PID {pid} /T".format(pid=p.pid))
                     cancelled.append("Cancelled")
+                    currentBlend.clear()
                     runCommands.clear()
                 else:
                     return
@@ -250,6 +251,8 @@ def renderAll(): ## render button command
             cancel.pack(anchor='s')
 
             bar.start()
+
+            frame = 1
 
             # Reads each line from the process
             while p.stdout is not None:
@@ -261,9 +264,102 @@ def renderAll(): ## render button command
 
                 # Updates Progress Bar
                 # And Status
-                statusFrame.insert(END, f'{l}')
-                statusFrame.yview(END)
+
                 bar.update()
+
+                if l.startswith("Read blend:"):
+
+                    b = list(l.replace("Read blend:", "").strip('\n'))
+                    b2 = []
+                    blend = []
+
+                    for c in reversed(b):
+                        if c == '/':
+                            break
+                        b2.append(c)
+
+                    for c in reversed(b2):
+                        blend.append(c)
+
+                    blendName = ''.join(blend)
+
+                    if currentBlend != []:
+                        statusFrame.delete(0,END)
+                        currentBlend.clear()
+
+                    currentBlend.append(blendName)
+
+                    statusFrame.insert(END, f'RENDERING: {blendName}')
+                    statusFrame.insert(END, '---')
+                    statusFrame.insert(END, '')
+                    statusFrame.yview(END)
+
+                if l.startswith("Fra:"):
+
+                    if frame <= 8: #frames in ones gets printed
+
+                        currentframe = int(l[4:5])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                    if (frame >= 9) and (frame <= 98): #frames in tens gets printed
+
+                        currentframe = int(l[4:6])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                    if (frame >= 99) and (frame <= 998): #frames in hundreds gets printed
+
+                        currentframe = int(l[4:7])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                    if (frame >= 999) and (frame <= 9998): #frames in thousands gets printed
+
+                        currentframe = int(l[4:8])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                    if (frame >= 9999) and (frame <= 99998): #frames in ten-thousands gets printed
+
+                        currentframe = int(l[4:9])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                    if (frame >= 99999) and (frame <= 999998): #frames in hundred-thousands gets printed
+
+                        currentframe = int(l[4:10])
+
+                        if currentframe > frame:
+                            frame += 1
+                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
+                            statusFrame.yview(END)
+
+                if l.startswith("Append"):
+                    statusFrame.select_set(END)
+                    statusFrame.delete(statusFrame.curselection())
+
+                if l.startswith("Blender quit"):
+                    frame = 1
+                    statusFrame.delete(0,END)
+                    statusFrame.insert(END, f'RENDERED: {currentBlend[0]}')
+                    statusFrame.yview(END)
+
 
                 # Ends loop when process is done
                 if not line:
@@ -272,10 +368,14 @@ def renderAll(): ## render button command
 
             if cancelled != []:
                 bar.stop()
+                statusFrame.delete(0, END)
                 statusFrame.insert(END, "***RENDER CANCELLED***")
                 cancelled.clear()
 
             else:
+                statusFrame.delete(0, END)
+                statusFrame.insert(END, 'ALL FILES RENDERED!')
+                statusFrame.yview(END)
                 bar.stop()
                 messagebox.showinfo("", "RENDER DONE!")
 
