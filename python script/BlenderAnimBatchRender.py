@@ -98,6 +98,8 @@ def addBlendFile(): ## ADD button command
 
     for add in renderNames:
         frameFILES.insert(END, f'{add}')
+        frameFILES.yview(END)
+
 
 def removeFiles(): ## REMOVE button command
 
@@ -207,6 +209,7 @@ def renderAll(): ## render button command
 
         if renderConfirm == True:
 
+            frameNum = 0
             cancelled = []
             currentBlend = []
 
@@ -252,8 +255,6 @@ def renderAll(): ## render button command
 
             bar.start()
 
-            frame = 1
-
             # Reads each line from the process
             while p.stdout is not None:
 
@@ -289,77 +290,37 @@ def renderAll(): ## render button command
 
                     currentBlend.append(blendName)
 
-                    statusFrame.insert(END, f'RENDERING: {blendName}')
+                    statusFrame.insert(END, f'BLEND FILE: {blendName}')
                     statusFrame.insert(END, '---')
-                    statusFrame.insert(END, '')
                     statusFrame.yview(END)
 
                 if l.startswith("Fra:"):
 
-                    if frame <= 8: #frames in ones gets printed
+                    lineList = list(l.replace("Fra:", "").strip('\n'))
+                    newframe = []
 
-                        currentframe = int(l[4:5])
+                    for lin in lineList:
+                        if lin == "M":
+                            break
+                        newframe.append(lin)
 
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
+                    nframe = int("".join(newframe))
 
-                    if (frame >= 9) and (frame <= 98): #frames in tens gets printed
+                    if frameNum == 0:
+                        statusFrame.insert(END, f'RENDERING FRAME {nframe}...')
+                        statusFrame.yview(END)
 
-                        currentframe = int(l[4:6])
-
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
-
-                    if (frame >= 99) and (frame <= 998): #frames in hundreds gets printed
-
-                        currentframe = int(l[4:7])
-
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
-
-                    if (frame >= 999) and (frame <= 9998): #frames in thousands gets printed
-
-                        currentframe = int(l[4:8])
-
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
-
-                    if (frame >= 9999) and (frame <= 99998): #frames in ten-thousands gets printed
-
-                        currentframe = int(l[4:9])
-
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
-
-                    if (frame >= 99999) and (frame <= 999998): #frames in hundred-thousands gets printed
-
-                        currentframe = int(l[4:10])
-
-                        if currentframe > frame:
-                            frame += 1
-                            statusFrame.insert(END, f'Now rendering frame {currentframe}...')
-                            statusFrame.yview(END)
+                    frameNum += 1
 
                 if l.startswith("Append"):
+                    frameNum = 0
                     statusFrame.select_set(END)
                     statusFrame.delete(statusFrame.curselection())
 
                 if l.startswith("Blender quit"):
-                    frame = 1
                     statusFrame.delete(0,END)
                     statusFrame.insert(END, f'RENDERED: {currentBlend[0]}')
                     statusFrame.yview(END)
-
 
                 # Ends loop when process is done
                 if not line:
@@ -398,7 +359,6 @@ filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
 
-
 ## Frames
 frame = tk.Frame(root, bg="#d6d6d6", bd=20)
 frame.place(relwidth=0.9, relheight=0.9, relx=0.05, rely=0.02)
@@ -417,7 +377,6 @@ status.pack(anchor='sw')
 
 statusFrame = tk.Listbox(frame2, bg="black",fg='white', height=5)
 statusFrame.pack(anchor='s',fill='x')
-
 
 ## Top Buttons
 openFile = tk.Button(frame, text="Add", padx=10, pady=5, fg="black", command=addBlendFile)
